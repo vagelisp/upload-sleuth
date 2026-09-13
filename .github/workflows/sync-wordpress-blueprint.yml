@@ -35,7 +35,7 @@ jobs:
           jq empty "${BLUEPRINT}"
           jq -e '."$schema" == "https://playground.wordpress.net/blueprint-schema.json"' "${BLUEPRINT}" >/dev/null
           jq -e '.landingPage == "/wp-admin/tools.php?page=upload-sleuth"' "${BLUEPRINT}" >/dev/null
-          jq -e '.plugins | any(.slug == "upload-sleuth")' "${BLUEPRINT}" >/dev/null
+          jq -e '.plugins | any((. == "upload-sleuth") or (.slug? == "upload-sleuth"))' "${BLUEPRINT}" >/dev/null
 
       - name: Install Subversion client
         timeout-minutes: 5
