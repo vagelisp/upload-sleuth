@@ -88,7 +88,8 @@ jobs:
             --exclude='media-audit-*.zip' \
             --exclude='upload-sleuth-*.zip' \
             ./ "${SVN_DIR}/trunk/"
-          rsync -a --delete --exclude='.svn' .wordpress-org/assets/ "${SVN_DIR}/assets/"
+          # Preserve independently managed assets such as assets/blueprints/blueprint.json.
+          rsync -a --exclude='.svn' .wordpress-org/assets/ "${SVN_DIR}/assets/"
 
           svn add --force "${SVN_DIR}/trunk" "${SVN_DIR}/assets" >/dev/null
           while IFS= read -r missing_path; do
