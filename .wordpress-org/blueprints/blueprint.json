@@ -5,17 +5,6 @@
 		"php": "8.2",
 		"wp": "latest"
 	},
-	"phpExtensionBundles": ["kitchen-sink"],
-	"plugins": [
-		{
-			"resource": "wordpress.org/plugins",
-			"slug": "upload-sleuth"
-		}
-	],
-	"steps": [
-		{
-			"step": "login",
-			"username": "admin"
-		}
-	]
+	"login": true,
+	"plugins": ["upload-sleuth"]
 }
