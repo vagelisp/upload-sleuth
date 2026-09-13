@@ -4,7 +4,7 @@ Tags: media, uploads, audit, cleanup, wp-cli
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -122,6 +122,11 @@ Sites using S3, CDN, or another media-offload plugin require special care. A val
 Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backup-and-remove operation similarly requires `wp upload-sleuth --backup-delete --yes`.
 
 == Changelog ==
+
+= 1.0.3 =
+
+* Updated the directory description with related developer project and source links.
+* Added the validated WordPress Playground Blueprint for the public Live Preview.
 
 = 1.0.2 =
 
@@ -325,6 +330,10 @@ Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backu
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+
+Updates the directory readme and enables the WordPress Playground Live Preview configuration.
 
 = 1.0.2 =
 

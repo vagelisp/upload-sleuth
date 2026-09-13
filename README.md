@@ -255,6 +255,10 @@ Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_P
 
 ## Changelog
 
+### 1.0.3
+
+- Updated WordPress.org directory metadata and added the validated Playground Live Preview Blueprint.
+
 ### 1.0.2
 
 - Renamed the plugin, text domain, package, dashboard URL, and WP-CLI command to UploadSleuth and `upload-sleuth`.
