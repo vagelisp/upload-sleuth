@@ -255,6 +255,10 @@ Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_P
 
 ## Changelog
 
+### 1.0.5
+
+- Renamed internal constants and PHP package annotations to match the UploadSleuth brand.
+
 ### 1.0.4
 
 - Added cleanup-safe uninstall handling for plugin options and temporary data.

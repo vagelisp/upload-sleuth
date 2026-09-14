@@ -10,19 +10,19 @@
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: upload-sleuth
  *
- * @package GPMediaAudit
+ * @package UploadSleuth
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /** Current asset and release version. */
-define( 'MEDIA_AUDIT_VERSION', '1.0.4' );
+define( 'UPLOAD_SLEUTH_VERSION', '1.0.4' );
 
 /** Absolute plugin bootstrap path. */
-define( 'MEDIA_AUDIT_FILE', __FILE__ );
+define( 'UPLOAD_SLEUTH_FILE', __FILE__ );
 
 /** Public base URL used for dashboard assets. */
-define( 'MEDIA_AUDIT_URL', plugin_dir_url( __FILE__ ) );
+define( 'UPLOAD_SLEUTH_URL', plugin_dir_url( __FILE__ ) );
 
 require_once __DIR__ . '/includes/class-media-audit-cli-command.php';
 require_once __DIR__ . '/includes/class-media-audit-admin-page.php';

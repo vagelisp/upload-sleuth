@@ -2,7 +2,7 @@
 /**
  * AJAX-powered admin experience for UploadSleuth.
  *
- * @package GPMediaAudit
+ * @package UploadSleuth
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -87,8 +87,8 @@ class Media_Audit_Admin_Page {
 		if ( 'tools_page_upload-sleuth' !== $hook_suffix ) {
 			return;
 		}
-		wp_enqueue_style( 'media-audit-admin', MEDIA_AUDIT_URL . 'assets/admin.css', array(), MEDIA_AUDIT_VERSION );
-		wp_enqueue_script( 'media-audit-admin', MEDIA_AUDIT_URL . 'assets/admin.js', array(), MEDIA_AUDIT_VERSION, true );
+		wp_enqueue_style( 'media-audit-admin', UPLOAD_SLEUTH_URL . 'assets/admin.css', array(), UPLOAD_SLEUTH_VERSION );
+		wp_enqueue_script( 'media-audit-admin', UPLOAD_SLEUTH_URL . 'assets/admin.js', array(), UPLOAD_SLEUTH_VERSION, true );
 		wp_localize_script(
 			'media-audit-admin',
 			'MediaAudit',

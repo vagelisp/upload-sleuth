@@ -2,7 +2,7 @@
 /**
  * WP-CLI command for detecting likely stray uploads.
  *
- * @package GPMediaAudit
+ * @package UploadSleuth
  */
 
 defined( 'ABSPATH' ) || exit;

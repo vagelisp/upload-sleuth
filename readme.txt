@@ -123,6 +123,10 @@ Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backu
 
 == Changelog ==
 
+= 1.0.5 =
+
+* Renamed internal constants and PHP package annotations to match the UploadSleuth brand.
+
 = 1.0.4 =
 
 * Added a WordPress-native uninstall routine that removes UploadSleuth options and temporary scan data while preserving user files and backup archives.
@@ -335,6 +339,10 @@ Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backu
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.5 =
+
+Updates internal branding constants without changing plugin behavior.
 
 = 1.0.4 =
 
