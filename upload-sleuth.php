@@ -2,7 +2,7 @@
 /**
  * Plugin Name: UploadSleuth – Media Audit & Cleanup
  * Description: Find files that may be unused in WordPress uploads, spot missing Media Library files, and safely review, quarantine, back up, or delete them.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: Vagelis P.
@@ -16,13 +16,33 @@
 defined( 'ABSPATH' ) || exit;
 
 /** Current asset and release version. */
-define( 'UPLOAD_SLEUTH_VERSION', '1.0.4' );
+define( 'UPLOAD_SLEUTH_VERSION', '1.0.5' );
 
 /** Absolute plugin bootstrap path. */
 define( 'UPLOAD_SLEUTH_FILE', __FILE__ );
 
 /** Public base URL used for dashboard assets. */
 define( 'UPLOAD_SLEUTH_URL', plugin_dir_url( __FILE__ ) );
+
+/* Migrate persisted options from the pre-UploadSleuth namespace once. */
+function upload_sleuth_maybe_migrate_options() {
+	if ( get_option( 'upload_sleuth_namespace_migrated', false ) ) {
+		return;
+	}
+	$map = array(
+		'media_audit_settings'      => 'upload_sleuth_settings',
+		'media_audit_cleanup_stats' => 'upload_sleuth_cleanup_stats',
+		'media_audit_ignore_patterns' => 'upload_sleuth_ignore_patterns',
+	);
+	foreach ( $map as $old_key => $new_key ) {
+		$old_value = get_option( $old_key, null );
+		if ( null !== $old_value && false === get_option( $new_key, false ) ) {
+			update_option( $new_key, $old_value, false );
+		}
+	}
+	update_option( 'upload_sleuth_namespace_migrated', 1, false );
+}
+add_action( 'plugins_loaded', 'upload_sleuth_maybe_migrate_options', 1 );
 
 require_once __DIR__ . '/includes/class-media-audit-cli-command.php';
 require_once __DIR__ . '/includes/class-media-audit-admin-page.php';

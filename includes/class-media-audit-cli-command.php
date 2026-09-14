@@ -746,7 +746,7 @@ class Media_Audit_CLI_Command {
 			'quarantine_dir'  => 'upload-sleuth',
 		);
 
-		$settings = get_option( 'media_audit_settings', array() );
+		$settings = get_option( 'upload_sleuth_settings', array() );
 		if ( ! is_array( $settings ) ) {
 			return $defaults;
 		}
@@ -803,7 +803,7 @@ class Media_Audit_CLI_Command {
 			}
 		}
 
-		$option_patterns = get_option( 'media_audit_ignore_patterns', array() );
+		$option_patterns = get_option( 'upload_sleuth_ignore_patterns', array() );
 		if ( is_array( $option_patterns ) ) {
 			foreach ( $option_patterns as $item ) {
 				if ( is_string( $item ) && '' !== trim( $item ) ) {
@@ -836,8 +836,8 @@ class Media_Audit_CLI_Command {
 			}
 		}
 
-		if ( has_filter( 'media_audit_ignore_patterns' ) ) {
-			$patterns = (array) apply_filters( 'media_audit_ignore_patterns', $patterns );
+		if ( has_filter( 'upload_sleuth_ignore_patterns' ) ) {
+			$patterns = (array) apply_filters( 'upload_sleuth_ignore_patterns', $patterns );
 		}
 
 		$normalized = array();

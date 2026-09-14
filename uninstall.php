@@ -13,6 +13,11 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 global $wpdb;
 
 // Remove persistent plugin options.
+delete_option( 'upload_sleuth_settings' );
+delete_option( 'upload_sleuth_cleanup_stats' );
+delete_option( 'upload_sleuth_ignore_patterns' );
+delete_option( 'upload_sleuth_namespace_migrated' );
+// Remove legacy keys left by versions before the UploadSleuth namespace migration.
 delete_option( 'media_audit_settings' );
 delete_option( 'media_audit_cleanup_stats' );
 delete_option( 'media_audit_ignore_patterns' );
