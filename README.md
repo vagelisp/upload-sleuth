@@ -187,6 +187,22 @@ Enable **Browser console diagnostics** in Settings, then open the browser develo
 
 WP-CLI reports when filesystem inventory and attachment indexing complete, then prints a milestone for every 250 database candidates checked. Interactive table scans also show a progress bar; use `--state-file` to checkpoint long scans and `--resume` after an interruption. JSON reports created with `--save-report` can be imported from the WP-CLI tab for read-only dashboard review. These messages make long scans observable without changing machine-readable finding rows.
 
+## Integration hooks
+
+UploadSleuth exposes lifecycle actions for notification and automation integrations:
+
+- `upload_sleuth_scan_started( $context, $source )`
+- `upload_sleuth_scan_completed( $findings, $source )`
+- `upload_sleuth_scan_stopped( $findings, $source )`
+- `upload_sleuth_action_started( $context )`
+- `upload_sleuth_action_completed( $context )`
+- `upload_sleuth_delete_started` / `upload_sleuth_delete_completed`
+- `upload_sleuth_quarantine_started` / `upload_sleuth_quarantine_completed`
+- `upload_sleuth_backup_delete_started` / `upload_sleuth_backup_delete_completed`
+- `upload_sleuth_quarantine_emptied( $context )`
+
+The source argument is `dashboard` or `cli`. File-level hooks use the same `upload_sleuth_*` namespace. The dashboard also links to [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator-project/) for optional alerts.
+
 ## What is checked
 
 UploadSleuth builds an attachment reference index from `_wp_attached_file` and `_wp_attachment_metadata`. It recognizes the main file, generated image sizes, `original_image`, and `backup_sizes`.
@@ -228,10 +244,10 @@ URL-encoded URLs, plain URLs, `/uploads/` fragments, and relative paths are cons
 
 Implementation boundaries, scan-job fields, cancellation semantics, and filesystem safety invariants are documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-Ignore patterns can be modified with the `media_audit_ignore_patterns` filter:
+Ignore patterns can be modified with the `upload_sleuth_ignore_patterns` filter:
 
 ```php
-add_filter('media_audit_ignore_patterns', function ($patterns) {
+add_filter('upload_sleuth_ignore_patterns', function ($patterns) {
     $patterns[] = 'generated-reports/*';
     return $patterns;
 });
@@ -239,12 +255,12 @@ add_filter('media_audit_ignore_patterns', function ($patterns) {
 
 File-action integrations can observe these hooks:
 
-- `media_audit_before_file_action` — before a real quarantine, backup removal, or deletion.
-- `media_audit_file_quarantined` — after a file is moved successfully.
-- `media_audit_file_restored` — after a quarantined file is restored successfully.
-- `media_audit_quarantined_file_deleted` — after a quarantined file is permanently removed.
-- `media_audit_file_backed_up_and_removed` — after a verified backup and successful original removal.
-- `media_audit_file_deleted` — after WordPress successfully removes a standalone file.
+- `upload_sleuth_before_file_action` — before a real quarantine, backup removal, or deletion.
+- `upload_sleuth_file_quarantined` — after a file is moved successfully.
+- `upload_sleuth_file_restored` — after a quarantined file is restored successfully.
+- `upload_sleuth_quarantined_file_deleted` — after a quarantined file is permanently removed.
+- `upload_sleuth_file_backed_up_and_removed` — after a verified backup and successful original removal.
+- `upload_sleuth_file_deleted` — after WordPress successfully removes a standalone file.
 
 Core `wp_delete_file` filtering also applies to backup removal and permanent deletion.
 

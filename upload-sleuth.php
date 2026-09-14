@@ -24,26 +24,6 @@ define( 'UPLOAD_SLEUTH_FILE', __FILE__ );
 /** Public base URL used for dashboard assets. */
 define( 'UPLOAD_SLEUTH_URL', plugin_dir_url( __FILE__ ) );
 
-/* Migrate persisted options from the pre-UploadSleuth namespace once. */
-function upload_sleuth_maybe_migrate_options() {
-	if ( get_option( 'upload_sleuth_namespace_migrated', false ) ) {
-		return;
-	}
-	$map = array(
-		'media_audit_settings'      => 'upload_sleuth_settings',
-		'media_audit_cleanup_stats' => 'upload_sleuth_cleanup_stats',
-		'media_audit_ignore_patterns' => 'upload_sleuth_ignore_patterns',
-	);
-	foreach ( $map as $old_key => $new_key ) {
-		$old_value = get_option( $old_key, null );
-		if ( null !== $old_value && false === get_option( $new_key, false ) ) {
-			update_option( $new_key, $old_value, false );
-		}
-	}
-	update_option( 'upload_sleuth_namespace_migrated', 1, false );
-}
-add_action( 'plugins_loaded', 'upload_sleuth_maybe_migrate_options', 1 );
-
 require_once __DIR__ . '/includes/class-media-audit-cli-command.php';
 require_once __DIR__ . '/includes/class-media-audit-admin-page.php';
 

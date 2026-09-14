@@ -41,7 +41,7 @@ Files without a detected reference are shown as likely stray candidates. They ar
 
 A file can be referenced by an external system, theme or plugin code, encoded data, a custom database, or another location the plugin cannot inspect. Make a verified backup and test quarantined files before deleting anything permanently.
 
-UploadSleuth is maintained by the same developer behind [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator/), a WordPress plugin for turning site events into dashboard alerts and optional mobile or MQTT notifications. [Browse the UploadSleuth source code on GitHub](https://github.com/vagelisp/upload-sleuth).
+UploadSleuth is maintained by the same developer behind [Notificator – Alerts & Notifications](https://wordpress.org/plugins/notificator-project/), a WordPress plugin for turning site events into dashboard alerts and optional mobile or MQTT notifications. [Browse the UploadSleuth source code on GitHub](https://github.com/vagelisp/upload-sleuth).
 
 == Installation ==
 
@@ -128,6 +128,10 @@ Long scans can be checkpointed and resumed:
 `wp upload-sleuth --clear-state --state-file=/path/upload-sleuth-scan.json`
 
 Use `--save-report=/path/upload-sleuth-report.json` to export JSON findings, then import that file from the WP-CLI tab in the dashboard. Interactive table scans display an animated progress bar.
+
+== Integration hooks ==
+
+UploadSleuth fires `upload_sleuth_*` lifecycle and file-action hooks for notification and automation integrations, including scan started/completed/stopped, action started/completed, and `upload_sleuth_quarantine_emptied`. The source argument identifies `dashboard` or `cli`. See the project README for the complete hook list.
 
 == Changelog ==
 

@@ -122,6 +122,22 @@
 	margin: 0;
 }
 
+.media-audit-wrap .notice-success {
+	color: #155724;
+	border-left-color: #22a06b;
+	background: #ecfdf3;
+}
+
+body.tools_page_upload-sleuth .notice-success {
+	color: #14532d;
+	border-left-color: #16a34a;
+	background: #dcfce7;
+}
+
+body.tools_page_upload-sleuth .notice-success p {
+	color: #14532d;
+}
+
 .media-audit-grid {
 	display: grid;
 	grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
@@ -973,6 +989,39 @@
 	color: var(--ma-muted);
 }
 
+.media-audit-active-ignores {
+	display: grid;
+	gap: 5px;
+	margin-top: 18px;
+	padding: 11px 13px;
+	border-left: 3px solid var(--ma-brand);
+	background: #f5f7ff;
+}
+
+.media-audit-active-ignores code {
+	color: #344054;
+	word-break: break-word;
+}
+
+.media-audit-active-ignores small {
+	color: var(--ma-muted);
+}
+
+.media-audit-integration {
+	margin-top: 22px;
+	padding-top: 18px;
+	border-top: 1px solid var(--ma-line);
+}
+
+.media-audit-integration h3 {
+	margin: 0 0 6px;
+}
+
+.media-audit-integration p {
+	margin: 0 0 12px;
+	font-size: 12px;
+}
+
 .media-audit-help-checklist {
 	margin-bottom: 18px;
 	padding: 20px;
@@ -1349,4 +1398,41 @@
 	.media-audit-integrity-actions > div {
 		justify-content: flex-start;
 	}
+}
+
+/* Keep the global Settings API notice aligned on this screen. */
+body.tools_page_upload-sleuth .notice-success {
+	position: relative;
+	padding-right: 44px;
+}
+
+body.tools_page_upload-sleuth .notice-success .notice-dismiss {
+	top: 0;
+	right: 0;
+	width: 42px;
+	height: 100%;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform: none;
+}
+
+body.tools_page_upload-sleuth .notice-success .notice-dismiss::before {
+	margin: 0;
+}
+
+.media-audit-integration-title {
+	display: flex;
+	gap: 8px;
+}
+
+.media-audit-free-badge {
+	padding: 5px 7px;
+	margin-left: 5px;
+	color: #166534;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 999px;
+	background: #dcfce7;
 }

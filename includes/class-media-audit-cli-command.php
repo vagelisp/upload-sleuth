@@ -159,6 +159,7 @@ class Media_Audit_CLI_Command {
 			$this->cli_error( '--resume requires --state-file=<path>.' );
 		}
 		$this->cli_log( 'Scanning uploads and building the attachment reference index...' );
+		do_action( 'upload_sleuth_scan_started', array( 'options' => $assoc_args ), 'cli' );
 		if ( '' !== $state_file ) {
 			$job = $this->get_bool_flag( $assoc_args, 'resume', false ) && is_readable( $state_file ) ? json_decode( (string) file_get_contents( $state_file ), true ) : $this->prepare_audit_job( $assoc_args );
 			if ( ! is_array( $job ) || ! empty( $job['error'] ) ) {
@@ -175,6 +176,7 @@ class Media_Audit_CLI_Command {
 		} else {
 			$findings = $this->get_audit_results( $assoc_args );
 		}
+		do_action( 'upload_sleuth_scan_completed', $findings, 'cli' );
 		if ( ! empty( $findings['error'] ) ) {
 			$this->cli_error( (string) $findings['error'] );
 		}
@@ -210,7 +212,11 @@ class Media_Audit_CLI_Command {
 
 		if ( ( $quarantine || $backup_delete || $delete ) && ! empty( $stray_rows ) ) {
 			$action      = $delete ? 'delete' : ( $backup_delete ? 'backup-delete' : 'quarantine' );
+			do_action( 'upload_sleuth_action_started', array( 'action' => $action, 'paths' => wp_list_pluck( $stray_rows, 'path' ), 'dry_run' => $dry_run, 'source' => 'cli' ) );
+			do_action( 'upload_sleuth_' . str_replace( '-', '_', $action ) . '_started', array( 'action' => $action, 'paths' => wp_list_pluck( $stray_rows, 'path' ), 'dry_run' => $dry_run, 'source' => 'cli' ) );
 			$action_rows = $this->apply_action_to_paths( wp_list_pluck( $stray_rows, 'path' ), $action, $dry_run, (string) $findings['quarantine_dir'] );
+			do_action( 'upload_sleuth_action_completed', array( 'action' => $action, 'rows' => $action_rows, 'dry_run' => $dry_run, 'source' => 'cli' ) );
+			do_action( 'upload_sleuth_' . str_replace( '-', '_', $action ) . '_completed', array( 'action' => $action, 'rows' => $action_rows, 'dry_run' => $dry_run, 'source' => 'cli' ) );
 			$this->cli_log( '' );
 			$this->cli_log( ucfirst( $action ) . ' results' );
 			$this->cli_log( str_repeat( '-', strlen( $action ) + 8 ) );
@@ -375,6 +381,7 @@ class Media_Audit_CLI_Command {
 			'total_files'         => $total_files,
 			'total_size_bytes'    => $total_size_bytes,
 			'ignored_files'       => $ignored_files,
+			'ignore_patterns'     => array_values( $ignore_patterns ),
 			'attachment_matched'  => $attachment_matched,
 			'checked_db'          => $checked_db,
 			'db_matched'          => $db_matched,
@@ -479,6 +486,7 @@ class Media_Audit_CLI_Command {
 			'total_files'         => count( $files ),
 			'total_size_bytes'    => $total_size_bytes,
 			'ignored_files'       => $ignored_files,
+			'ignore_patterns'     => array_values( $ignore_patterns ),
 			'attachment_matched'  => $attachment_matched,
 			'filtered_files'      => $filtered_files,
 			'checked_db'          => 0,
@@ -514,7 +522,7 @@ class Media_Audit_CLI_Command {
 		if ( ! empty( $job['completed'] ) || ! empty( $job['stopped'] ) ) {
 			return $job;
 		}
-		$batch_size = max( 1, min( 100, (int) $batch_size ) );
+		$batch_size = max( 1, min( 500, (int) $batch_size ) );
 		$total      = count( $job['candidates'] );
 		$processed  = 0;
 
@@ -576,6 +584,7 @@ class Media_Audit_CLI_Command {
 			'total_files'          => (int) $job['total_files'],
 			'total_size_bytes'     => (int) $job['total_size_bytes'],
 			'ignored_files'        => (int) $job['ignored_files'],
+			'ignore_patterns'      => isset( $job['ignore_patterns'] ) ? array_values( (array) $job['ignore_patterns'] ) : array(),
 			'attachment_matched'   => (int) $job['attachment_matched'],
 			'filtered_files'       => isset( $job['filtered_files'] ) ? (int) $job['filtered_files'] : 0,
 			'checked_db'           => (int) $job['checked_db'],
@@ -1554,11 +1563,11 @@ class Media_Audit_CLI_Command {
 				continue;
 			}
 
-			do_action( 'media_audit_before_file_action', $source, $relative, 'quarantine' );
+			do_action( 'upload_sleuth_before_file_action', $source, $relative, 'quarantine' );
 			// A same-filesystem rename is atomic and preserves a recoverable original path.
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- WP_Filesystem may request credentials during a WP-CLI operation.
 			if ( rename( $source, $destination ) ) {
-				do_action( 'media_audit_file_quarantined', $source, $destination, $relative );
+				do_action( 'upload_sleuth_file_quarantined', $source, $destination, $relative );
 				$results[] = array(
 					'path'        => $relative,
 					'action'      => 'moved',
@@ -1796,9 +1805,9 @@ class Media_Audit_CLI_Command {
 				);
 				continue;
 			}
-			do_action( 'media_audit_before_file_action', $item['source'], $relative, 'backup-delete' );
+			do_action( 'upload_sleuth_before_file_action', $item['source'], $relative, 'backup-delete' );
 			if ( wp_delete_file( $item['source'] ) && ! file_exists( $item['source'] ) ) {
-				do_action( 'media_audit_file_backed_up_and_removed', $item['source'], $archive_path, $relative );
+				do_action( 'upload_sleuth_file_backed_up_and_removed', $item['source'], $archive_path, $relative );
 				$results[] = array(
 					'path'        => $relative,
 					'action'      => 'backed-up-and-removed',
@@ -1863,9 +1872,9 @@ class Media_Audit_CLI_Command {
 				continue;
 			}
 
-			do_action( 'media_audit_before_file_action', $source, $relative, 'delete' );
+			do_action( 'upload_sleuth_before_file_action', $source, $relative, 'delete' );
 			if ( wp_delete_file( $source ) && ! file_exists( $source ) ) {
-				do_action( 'media_audit_file_deleted', $source, $relative );
+				do_action( 'upload_sleuth_file_deleted', $source, $relative );
 				$results[] = array(
 					'path'        => $relative,
 					'action'      => 'deleted',

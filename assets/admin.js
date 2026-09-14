@@ -10,7 +10,7 @@
 	// newer scan or a stop response.
 	const uiRowBatchSize = Math.max(
 		50,
-		Math.min( 1000, Number( MediaAudit.uiRowBatchSize || 250 ) )
+		Math.min( 5000, Number( MediaAudit.uiRowBatchSize || 250 ) )
 	);
 	const state = {
 		findings: MediaAudit.findings || {},
@@ -241,11 +241,11 @@
 	function runActionBatches( action, paths, dryRun, message, allFindings ) {
 		const batchSize = Math.max(
 			1,
-			Math.min( 100, Number( MediaAudit.actionBatchSize || 20 ) )
+			Math.min( 500, Number( MediaAudit.actionBatchSize || 20 ) )
 		);
 		const delay = Math.max(
 			0,
-			Math.min( 3000, Number( MediaAudit.actionDelayMs || 0 ) )
+			Math.min( 10000, Number( MediaAudit.actionDelayMs || 0 ) )
 		);
 		const batches = [];
 		if ( action === 'backup-delete' ) {
@@ -699,6 +699,10 @@
 				Number( findings.total_files || 0 ).toLocaleString(),
 			],
 			[
+				'Ignored by pattern',
+				Number( findings.ignored_files || 0 ).toLocaleString(),
+			],
+			[
 				'Attachment matches',
 				Number( findings.attachment_matched || 0 ).toLocaleString(),
 			],
@@ -741,6 +745,10 @@
 		}
 		if ( findings.limited_out ) {
 			meta += ' · Database check limit reached';
+		}
+		const ignoredPatterns = Array.isArray( findings.ignore_patterns ) ? findings.ignore_patterns.filter( Boolean ) : [];
+		if ( ignoredPatterns.length ) {
+			meta += ' · Ignoring: ' + ignoredPatterns.join( ', ' );
 		}
 		byId( 'media-audit-run-meta' ).textContent = meta;
 		const status = byId( 'media-audit-result-status' );
@@ -1313,11 +1321,11 @@
 		}
 		const batchSize = Math.max(
 			1,
-			Math.min( 100, Number( MediaAudit.actionBatchSize || 20 ) )
+			Math.min( 500, Number( MediaAudit.actionBatchSize || 20 ) )
 		);
 		const delay = Math.max(
 			0,
-			Math.min( 3000, Number( MediaAudit.actionDelayMs || 0 ) )
+			Math.min( 10000, Number( MediaAudit.actionDelayMs || 0 ) )
 		);
 		const batches = [];
 		for ( let index = 0; index < ids.length; index += batchSize ) {
