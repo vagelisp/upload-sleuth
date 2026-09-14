@@ -4,7 +4,7 @@ Tags: media, uploads, audit, cleanup, wp-cli
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -122,6 +122,11 @@ Sites using S3, CDN, or another media-offload plugin require special care. A val
 Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backup-and-remove operation similarly requires `wp upload-sleuth --backup-delete --yes`.
 
 == Changelog ==
+
+= 1.0.4 =
+
+* Added a WordPress-native uninstall routine that removes UploadSleuth options and temporary scan data while preserving user files and backup archives.
+* Renamed the Tools menu entry to Media Audit for clearer administration.
 
 = 1.0.3 =
 
@@ -330,6 +335,10 @@ Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backu
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.4 =
+
+Documents the cleanup-safe uninstall routine and clearer admin menu label.
 
 = 1.0.3 =
 

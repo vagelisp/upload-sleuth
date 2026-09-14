@@ -255,6 +255,11 @@ Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_P
 
 ## Changelog
 
+### 1.0.4
+
+- Added cleanup-safe uninstall handling for plugin options and temporary data.
+- Renamed the WordPress Tools menu entry to Media Audit.
+
 ### 1.0.3
 
 - Updated WordPress.org directory metadata and added the validated Playground Live Preview Blueprint.
