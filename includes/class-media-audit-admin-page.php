@@ -51,6 +51,7 @@ class Media_Audit_Admin_Page {
 		add_action( 'wp_ajax_media_audit_stop', array( __CLASS__, 'ajax_stop_audit' ) );
 		add_action( 'wp_ajax_media_audit_apply', array( __CLASS__, 'ajax_apply_action' ) );
 		add_action( 'wp_ajax_media_audit_clear', array( __CLASS__, 'ajax_clear_findings' ) );
+		add_action( 'wp_ajax_media_audit_import_report', array( __CLASS__, 'ajax_import_report' ) );
 		add_action( 'wp_ajax_media_audit_list_quarantine', array( __CLASS__, 'ajax_list_quarantine' ) );
 		add_action( 'wp_ajax_media_audit_restore', array( __CLASS__, 'ajax_restore_quarantined_file' ) );
 		add_action( 'wp_ajax_media_audit_delete_quarantine', array( __CLASS__, 'ajax_delete_quarantined_files' ) );
@@ -391,6 +392,11 @@ class Media_Audit_Admin_Page {
 			'--yes'                   => __( 'Confirm a real backup-and-remove or permanent deletion.', 'upload-sleuth' ),
 			'--quarantine-dir=<path>' => __( 'Choose an optional child directory below uploads/upload-sleuth.', 'upload-sleuth' ),
 			'--fail-on-findings'      => __( 'Exit with status 1 when likely stray files are found.', 'upload-sleuth' ),
+			'--progress'              => __( 'Show an animated progress bar during interactive table scans.', 'upload-sleuth' ),
+			'--state-file=<path>'     => __( 'Save resumable scan checkpoints to a JSON file.', 'upload-sleuth' ),
+			'--resume'                => __( 'Resume a scan from the saved checkpoint.', 'upload-sleuth' ),
+			'--clear-state'           => __( 'Remove a saved scan checkpoint.', 'upload-sleuth' ),
+			'--save-report=<path>'    => __( 'Save the completed findings report as JSON for later import.', 'upload-sleuth' ),
 		);
 		$examples = array(
 			array( __( 'Standard audit', 'upload-sleuth' ), 'wp upload-sleuth' ),
@@ -406,12 +412,19 @@ class Media_Audit_Admin_Page {
 			array( __( 'Preview permanent deletion', 'upload-sleuth' ), 'wp upload-sleuth --delete --dry-run' ),
 			array( __( 'Permanently delete findings', 'upload-sleuth' ), 'wp upload-sleuth --delete --yes' ),
 			array( __( 'CI or scheduled audit', 'upload-sleuth' ), 'wp upload-sleuth --summary-only --fail-on-findings' ),
+			array( __( 'Resumable scan', 'upload-sleuth' ), 'wp upload-sleuth --state-file=/path/upload-sleuth-scan.json' ),
+			array( __( 'Resume interrupted scan', 'upload-sleuth' ), 'wp upload-sleuth --resume --state-file=/path/upload-sleuth-scan.json' ),
+			array( __( 'Save JSON report', 'upload-sleuth' ), 'wp upload-sleuth --save-report=/path/upload-sleuth-report.json --summary-only' ),
 			array( __( 'Show built-in WP-CLI help', 'upload-sleuth' ), 'wp help upload-sleuth' ),
 		);
 		?>
 		<div class="media-audit-card media-audit-cli">
 			<div class="media-audit-cli-heading"><div><p class="media-audit-eyebrow"><?php esc_html_e( 'DEVELOPER REFERENCE', 'upload-sleuth' ); ?></p><h2><?php esc_html_e( 'WP-CLI commands', 'upload-sleuth' ); ?></h2><p><?php esc_html_e( 'Run audits, produce machine-readable reports, and perform guarded filesystem actions from the terminal.', 'upload-sleuth' ); ?></p></div><span class="dashicons dashicons-editor-code"></span></div>
 			<div class="media-audit-section-notice" data-notice-section="cli" aria-live="polite"></div>
+			<form id="media-audit-import-report" class="media-audit-cli-import" enctype="multipart/form-data">
+				<label for="media-audit-report-file"><strong><?php esc_html_e( 'Import a CLI report', 'upload-sleuth' ); ?></strong><small><?php esc_html_e( 'Upload a JSON report created with --save-report to review its findings in this dashboard. Importing never changes files.', 'upload-sleuth' ); ?></small></label>
+				<div class="media-audit-cli-import-controls"><input type="file" id="media-audit-report-file" name="report" accept=".json,application/json" required /><button type="submit" class="button"><?php esc_html_e( 'Import report', 'upload-sleuth' ); ?></button></div>
+			</form>
 			<div class="media-audit-cli-syntax"><span><?php esc_html_e( 'Base command', 'upload-sleuth' ); ?></span><code>wp upload-sleuth [options]</code><button type="button" class="button" data-copy-command="wp upload-sleuth"><?php esc_html_e( 'Copy', 'upload-sleuth' ); ?></button></div>
 			<div class="notice notice-warning inline"><p><strong><?php esc_html_e( 'Safety:', 'upload-sleuth' ); ?></strong> <?php esc_html_e( 'Use --dry-run first. Before every action, attachment metadata and database references are checked again. Files that are now referenced are blocked. --backup-delete and --delete require --yes when they make real changes.', 'upload-sleuth' ); ?></p></div>
 
@@ -1072,6 +1085,39 @@ class Media_Audit_Admin_Page {
 		readfile( $path );
 		wp_delete_file( $path );
 		exit;
+	}
+
+
+	/** Import and validate a CLI JSON report for read-only dashboard review. */
+	public static function ajax_import_report() {
+		self::verify_ajax_request();
+		if ( empty( $_FILES['report']['tmp_name'] ) || ! is_uploaded_file( (string) $_FILES['report']['tmp_name'] ) || UPLOAD_ERR_OK !== (int) $_FILES['report']['error'] ) {
+			wp_send_json_error( array( 'message' => __( 'Choose a valid JSON report file.', 'upload-sleuth' ) ), 400 );
+		}
+		if ( ! empty( $_FILES['report']['size'] ) && (int) $_FILES['report']['size'] > 5 * MB_IN_BYTES ) {
+			wp_send_json_error( array( 'message' => __( 'The report is too large. Upload a JSON file smaller than 5 MB.', 'upload-sleuth' ) ), 400 );
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading the short-lived upload before it is discarded.
+		$raw = file_get_contents( (string) $_FILES['report']['tmp_name'] );
+		$data = json_decode( (string) $raw, true );
+		if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $data ) || ! isset( $data['stray_rows'] ) || ! is_array( $data['stray_rows'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'The report format is invalid.', 'upload-sleuth' ) ), 400 );
+		}
+		foreach ( $data['stray_rows'] as $index => $row ) {
+			$path = is_array( $row ) && isset( $row['path'] ) ? (string) $row['path'] : '';
+			if ( '' === $path || preg_match( '#^(?:[A-Za-z]:[\\/]|/)|(^|/)\.\.?(/|$)|[\x00-\x1F]#', $path ) ) {
+				wp_send_json_error( array( 'message' => sprintf( __( 'The report contains an unsafe file path at row %d.', 'upload-sleuth' ), (int) $index + 1 ) ), 400 );
+			}
+			$data['stray_rows'][ $index ]['path'] = self::sanitize_relative_path( $path );
+		}
+		$data['scope_label']    = isset( $data['scope_label'] ) ? sanitize_text_field( (string) $data['scope_label'] ) : __( 'uploads', 'upload-sleuth' );
+		// Never trust action-related directories from an imported report. Actions use current settings.
+		$data['quarantine_dir'] = (string) self::get_settings()['quarantine_dir'];
+		$data['completed']      = true;
+		$data['completed_at']   = current_time( 'mysql' );
+		$data['imported_report'] = true;
+		self::save_last_findings( $data );
+		wp_send_json_success( array( 'message' => __( 'CLI report imported for review.', 'upload-sleuth' ), 'findings' => self::get_last_findings() ) );
 	}
 
 	/** Clear only the current administrator's saved display findings. */

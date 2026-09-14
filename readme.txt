@@ -4,7 +4,7 @@ Tags: media, uploads, audit, cleanup, wp-cli
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.1.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -121,7 +121,22 @@ Sites using S3, CDN, or another media-offload plugin require special care. A val
 
 Real permanent deletion requires `wp upload-sleuth --delete --yes`. A real backup-and-remove operation similarly requires `wp upload-sleuth --backup-delete --yes`.
 
+Long scans can be checkpointed and resumed:
+
+`wp upload-sleuth --state-file=/path/upload-sleuth-scan.json`
+`wp upload-sleuth --resume --state-file=/path/upload-sleuth-scan.json`
+`wp upload-sleuth --clear-state --state-file=/path/upload-sleuth-scan.json`
+
+Use `--save-report=/path/upload-sleuth-report.json` to export JSON findings, then import that file from the WP-CLI tab in the dashboard. Interactive table scans display an animated progress bar.
+
 == Changelog ==
+
+= 1.1.0 =
+
+* Added animated WP-CLI progress output for interactive scans.
+* Added resumable scan checkpoints with `--state-file`, `--resume`, and `--clear-state`.
+* Added JSON report export with `--save-report` and secure dashboard import for review.
+* Documented all new CLI workflows in the dashboard and project documentation.
 
 = 1.0.5 =
 

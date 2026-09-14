@@ -1001,6 +1001,37 @@
 	background: var(--ma-soft);
 }
 
+.media-audit-cli-import {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
+	gap: 14px;
+	margin: 18px 0;
+	padding: 14px 16px;
+	border: 1px solid var(--ma-line);
+	border-radius: 9px;
+	background: #fafbfc;
+}
+
+.media-audit-cli-import label {
+	display: grid;
+	gap: 4px;
+}
+
+.media-audit-cli-import label small {
+	color: var(--ma-muted);
+}
+
+.media-audit-cli-import-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.media-audit-cli-import-controls input[type="file"] {
+	max-width: 260px;
+}
+
 .media-audit-cli-syntax {
 	display: grid;
 	grid-template-columns: 110px minmax(0, 1fr) auto;
@@ -1270,6 +1301,15 @@
 		grid-column: 1 / -1;
 		grid-row: auto;
 		justify-self: start;
+	}
+
+	.media-audit-cli-import {
+		grid-template-columns: 1fr;
+		align-items: stretch;
+	}
+
+	.media-audit-cli-import-controls {
+		flex-wrap: wrap;
 	}
 
 	.media-audit-toolbar {

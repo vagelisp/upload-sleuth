@@ -94,6 +94,18 @@ class Media_Audit_CLI_Command {
 		 * [--summary-only]
 		 * : Print the summary without individual finding rows.
 		 *
+		 * [--state-file=<path>]
+		 * : Save a resumable scan checkpoint to a JSON file.
+		 *
+		 * [--resume]
+		 * : Resume from the checkpoint supplied by --state-file.
+		 *
+		 * [--clear-state]
+		 * : Remove the checkpoint supplied by --state-file.
+		 *
+		 * [--save-report=<path>]
+		 * : Save the completed findings payload as JSON.
+		 *
 		 * [--fail-on-findings]
 		 * : Exit with status 1 when likely stray files are found (useful in CI).
 		 *
@@ -132,12 +144,48 @@ class Media_Audit_CLI_Command {
 			$this->cli_error( 'Backup and remove requires --yes. Run with --backup-delete --dry-run first.' );
 		}
 
+		$state_file = isset( $assoc_args['state-file'] ) ? (string) $assoc_args['state-file'] : '';
+		if ( $this->get_bool_flag( $assoc_args, 'clear-state', false ) ) {
+			if ( '' === $state_file ) {
+				$this->cli_error( '--clear-state requires --state-file=<path>.' );
+			}
+			if ( is_file( $state_file ) ) {
+				wp_delete_file( $state_file );
+			}
+			$this->cli_success( 'Scan checkpoint cleared.' );
+			return;
+		}
+		if ( $this->get_bool_flag( $assoc_args, 'resume', false ) && '' === $state_file ) {
+			$this->cli_error( '--resume requires --state-file=<path>.' );
+		}
 		$this->cli_log( 'Scanning uploads and building the attachment reference index...' );
-		$findings = $this->get_audit_results( $assoc_args );
+		if ( '' !== $state_file ) {
+			$job = $this->get_bool_flag( $assoc_args, 'resume', false ) && is_readable( $state_file ) ? json_decode( (string) file_get_contents( $state_file ), true ) : $this->prepare_audit_job( $assoc_args );
+			if ( ! is_array( $job ) || ! empty( $job['error'] ) ) {
+				$this->cli_error( is_array( $job ) && ! empty( $job['error'] ) ? (string) $job['error'] : 'Invalid scan checkpoint.' );
+			}
+			while ( empty( $job['completed'] ) && empty( $job['stopped'] ) ) {
+				$job = $this->process_audit_job_batch( $job, 100 );
+				file_put_contents( $state_file, wp_json_encode( $job ) );
+			}
+			$findings = $this->finalize_audit_job( $job );
+			if ( ! empty( $job['completed'] ) && is_file( $state_file ) ) {
+				wp_delete_file( $state_file );
+			}
+		} else {
+			$findings = $this->get_audit_results( $assoc_args );
+		}
 		if ( ! empty( $findings['error'] ) ) {
 			$this->cli_error( (string) $findings['error'] );
 		}
 		$stray_rows = isset( $findings['stray_rows'] ) ? $findings['stray_rows'] : array();
+		if ( isset( $assoc_args['save-report'] ) && '' !== (string) $assoc_args['save-report'] ) {
+			$report_path = (string) $assoc_args['save-report'];
+			if ( false === file_put_contents( $report_path, wp_json_encode( $findings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) ) ) {
+				$this->cli_error( 'Could not write the findings report: ' . $report_path );
+			}
+			$this->cli_log( 'Findings report saved: ' . $report_path );
+		}
 
 		$this->cli_log( '' );
 		$this->cli_log( 'Summary' );
@@ -258,8 +306,15 @@ class Media_Audit_CLI_Command {
 		$db_matched         = 0;
 		$ignored_files      = 0;
 		$limited_out        = false;
+		$progress           = null;
+		if ( 'table' === ( isset( $assoc_args['format'] ) ? (string) $assoc_args['format'] : 'table' ) && function_exists( 'WP_CLI\\Utils\\make_progress_bar' ) ) {
+			$progress = call_user_func( 'WP_CLI\\Utils\\make_progress_bar', 'Checking uploads', count( $files ) );
+		}
 
 		foreach ( $files as $relative => $meta ) {
+			if ( null !== $progress ) {
+				$progress->tick();
+			}
 			if ( $this->is_ignored_file( $relative, $ignore_patterns ) ) {
 				++$ignored_files;
 				continue;
@@ -306,6 +361,10 @@ class Media_Audit_CLI_Command {
 				'modified'   => gmdate( 'Y-m-d H:i:s', (int) $meta['mtime'] ),
 				'reason'     => $skip_db_check ? 'not in attachment metadata' : 'no attachment/db reference found',
 			);
+		}
+
+		if ( null !== $progress ) {
+			$progress->finish();
 		}
 
 		return array(

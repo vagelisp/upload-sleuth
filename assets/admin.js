@@ -1998,6 +1998,37 @@
 		}
 	);
 
+	const importReportForm = byId( 'media-audit-import-report' );
+	if ( importReportForm ) {
+		importReportForm.addEventListener( 'submit', function ( event ) {
+			event.preventDefault();
+			const fileInput = byId( 'media-audit-report-file' );
+			if ( ! fileInput || ! fileInput.files || ! fileInput.files.length ) {
+				notice( 'Choose a JSON report file first.', 'warning', 'cli' );
+				return;
+			}
+			const formData = new FormData();
+			formData.append( 'action', 'media_audit_import_report' );
+			formData.append( 'nonce', MediaAudit.nonce );
+			formData.append( 'report', fileInput.files[ 0 ] );
+			const submit = importReportForm.querySelector( 'button[type="submit"]' );
+			submit.disabled = true;
+			fetch( MediaAudit.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: formData } )
+				.then( function ( response ) { return response.json(); } )
+				.then( function ( payload ) {
+					if ( ! payload.success ) {
+						throw new Error( payload.data && payload.data.message ? payload.data.message : MediaAudit.i18n.requestFailed );
+					}
+					state.findings = payload.data.findings || {};
+					state.selected = {};
+					renderFindings();
+					notice( payload.data.message, 'success', 'cli' );
+				} )
+				.catch( function ( error ) { notice( error.message, 'error', 'cli' ); } )
+				.finally( function () { submit.disabled = false; } );
+		} );
+	}
+
 	byId( 'media-audit-clear' ).addEventListener( 'click', function () {
 		if ( ! window.confirm( MediaAudit.i18n.clearConfirm ) ) {
 			return;

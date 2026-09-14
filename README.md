@@ -137,9 +137,18 @@ wp upload-sleuth --backup-delete --yes
 wp upload-sleuth --delete --dry-run
 wp upload-sleuth --delete --yes
 
+# Save a resumable checkpoint for long scans.
+wp upload-sleuth --state-file=/path/upload-sleuth-scan.json
+
+# Resume an interrupted scan, or clear its checkpoint.
+wp upload-sleuth --resume --state-file=/path/upload-sleuth-scan.json
+wp upload-sleuth --clear-state --state-file=/path/upload-sleuth-scan.json
+
 # Fail a CI or maintenance job when candidates exist.
 wp upload-sleuth --summary-only --fail-on-findings
-```
+
+# Save a JSON report for review in the dashboard.
+wp upload-sleuth --save-report=/path/upload-sleuth-report.json
 
 ### Options
 
@@ -163,6 +172,11 @@ wp upload-sleuth --summary-only --fail-on-findings
 | `--dry-run` | Simulate the chosen file action. |
 | `--yes` | Required for a real `--delete`. |
 | `--quarantine-dir=<path>` | Override the quarantine directory. |
+| `--progress` | Show an animated progress bar for interactive table scans. |
+| `--state-file=<path>` | Save resumable scan checkpoints as JSON. |
+| `--resume` | Resume from the checkpoint supplied by `--state-file`. |
+| `--clear-state` | Remove a saved scan checkpoint. |
+| `--save-report=<path>` | Save the complete findings payload as JSON for dashboard import. |
 | `--fail-on-findings` | Exit non-zero when candidates exist. |
 
 `--quarantine`, `--backup-delete`, and `--delete` are mutually exclusive. Real backup-and-remove and permanent-delete operations require `--yes`.
@@ -171,7 +185,7 @@ wp upload-sleuth --summary-only --fail-on-findings
 
 Enable **Browser console diagnostics** in Settings, then open the browser developer console before starting a dashboard scan to see submitted options, a heartbeat every five seconds, errors, elapsed request time, and a final result summary. File-action samples are capped at 100 rows. Diagnostics are disabled by default, and their heartbeat timer and large payload construction do not run while disabled.
 
-WP-CLI reports when filesystem inventory and attachment indexing complete, then prints a milestone for every 250 database candidates checked. These messages make long scans observable without changing machine-readable finding rows.
+WP-CLI reports when filesystem inventory and attachment indexing complete, then prints a milestone for every 250 database candidates checked. Interactive table scans also show a progress bar; use `--state-file` to checkpoint long scans and `--resume` after an interruption. JSON reports created with `--save-report` can be imported from the WP-CLI tab for read-only dashboard review. These messages make long scans observable without changing machine-readable finding rows.
 
 ## What is checked
 
@@ -238,7 +252,7 @@ Core `wp_delete_file` filtering also applies to backup removal and permanent del
 
 The **Create release** GitHub Actions workflow performs the complete release process manually and safely:
 
-1. Update the version in the `upload-sleuth.php` plugin header, `MEDIA_AUDIT_VERSION`, and the `readme.txt` stable tag.
+1. Update the version in the `upload-sleuth.php` plugin header, `UPLOAD_SLEUTH_VERSION`, and the `readme.txt` stable tag.
 2. Add the matching changelog entries and a user-facing `.github/release-notes/X.Y.Z.md` file, then merge the changes into the default branch.
 3. Open **Actions → Create release → Run workflow**.
 4. Choose whether the release is a prerelease and run it from the commit you want to publish.
@@ -254,6 +268,13 @@ The **Deploy UploadSleuth to WordPress.org** workflow synchronizes the committed
 Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_PASSWORD` secrets. Run the workflow with its default dry run first and inspect the SVN diff. Run it again with dry run disabled only after the diff is correct. The workflow derives the version from `upload-sleuth.php` and `readme.txt`, so update both before each deployment.
 
 ## Changelog
+
+### 1.1.0
+
+- Added animated WP-CLI progress output for interactive scans.
+- Added resumable scan checkpoints with `--state-file`, `--resume`, and `--clear-state`.
+- Added JSON report export with `--save-report` and secure dashboard import for review.
+- Documented all new CLI workflows in the dashboard and project documentation.
 
 ### 1.0.5
 

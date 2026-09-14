@@ -2,7 +2,7 @@
 /**
  * Plugin Name: UploadSleuth – Media Audit & Cleanup
  * Description: Find files that may be unused in WordPress uploads, spot missing Media Library files, and safely review, quarantine, back up, or delete them.
- * Version: 1.0.5
+ * Version: 1.1.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: Vagelis P.
@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /** Current asset and release version. */
-define( 'UPLOAD_SLEUTH_VERSION', '1.0.5' );
+define( 'UPLOAD_SLEUTH_VERSION', '1.1.0' );
 
 /** Absolute plugin bootstrap path. */
 define( 'UPLOAD_SLEUTH_FILE', __FILE__ );
