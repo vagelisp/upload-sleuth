@@ -62,7 +62,7 @@ class Media_Audit_Admin_Page {
 
 	/** Add UploadSleuth below the WordPress Tools menu. */
 	public static function register_menu() {
-		add_management_page( __( 'UploadSleuth', 'upload-sleuth' ), __( 'UploadSleuth', 'upload-sleuth' ), 'manage_options', 'upload-sleuth', array( __CLASS__, 'render_page' ) );
+		add_management_page( __( 'Media Audit', 'upload-sleuth' ), __( 'Media Audit', 'upload-sleuth' ), 'manage_options', 'upload-sleuth', array( __CLASS__, 'render_page' ) );
 	}
 
 	/** Register the single array-valued plugin option and sanitizer. */
