@@ -291,6 +291,9 @@ Create a GitHub environment named `wordpress-org` with `SVN_USERNAME` and `SVN_P
 - Added resumable scan checkpoints with `--state-file`, `--resume`, and `--clear-state`.
 - Added JSON report export with `--save-report` and secure dashboard import for review.
 - Documented all new CLI workflows in the dashboard and project documentation.
+- Added detailed `upload_sleuth_*` lifecycle hooks for notification integrations.
+- Added configurable batch tuning, visible ignore patterns, and improved admin action feedback.
+- Removed automatic legacy-option migration to prevent namespace conflicts.
 
 ### 1.0.5
 
